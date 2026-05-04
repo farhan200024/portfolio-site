@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Admin — Farhan Muhammad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d10;
+      --surface: #14141a;
+      --surface2: #1c1c24;
+      --border: rgba(255,255,255,0.08);
+      --border-focus: rgba(79,255,176,0.4);
+      --text: #e8e8ec;
+      --muted: #6a6a7a;
+      --accent: #4fffb0;
+      --accent-dim: rgba(79,255,176,0.1);
+      --danger: #ff4f6b;
+      --danger-dim: rgba(255,79,107,0.1);
+      --warning: #ffb84f;
+      --font-d: 'Syne', sans-serif;
+      --font-b: 'DM Sans', sans-serif;
+      --font-m: 'DM Mono', monospace;
+      --radius: 8px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+    /* Layout */
+    .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 28px 0; position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .sidebar-logo {
+      padding: 0 24px 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo span {
+      font-family: var(--font-d); font-size: 20px; font-weight: 800; letter-spacing: -0.03em;
+    }
+    .sidebar-logo span em { color: var(--accent); font-style: normal; }
+    .sidebar-tag {
+      font-family: var(--font-m); font-size: 10px; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 24px; cursor: pointer;
+      color: var(--muted); font-size: 13px; font-weight: 500;
+      border-left: 2px solid transparent;
+      transition: all 0.15s; user-select: none;
+    }
+    .nav-item:hover { color: var(--text); background: var(--surface2); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-dim); }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+    .sidebar-footer { margin-top: auto; padding: 20px 24px 0; border-top: 1px solid var(--border); }
+    .preview-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 10px; border-radius: var(--radius);
+      background: var(--accent); color: #0d0d10;
+      font-family: var(--font-d); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .preview-btn:hover { opacity: 0.85; }
+
+    /* Main */
+    .main { padding: 40px 48px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-family: var(--font-d); font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .page-sub { color: var(--muted); font-size: 13px; }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 28px 32px; margin-bottom: 20px;
+    }
+    .card-title {
+      font-family: var(--font-d); font-size: 14px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    /* Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .toggle-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .toggle-info p { font-size: 13px; color: var(--muted); }
+    .toggle { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; cursor: pointer;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 13px; transition: 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--muted); left: 3px; top: 3px; transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent-dim); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { background: var(--accent); transform: translateX(22px); }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-m); font-size: 11px; padding: 4px 12px; border-radius: 100px;
+      margin-top: 12px;
+    }
+    .status-badge.available { background: var(--accent-dim); border: 1px solid rgba(79,255,176,0.2); color: var(--accent); }
+    .status-badge.unavailable { background: var(--danger-dim); border: 1px solid rgba(255,79,107,0.2); color: var(--danger); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* Form elements */
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; margin-top: 16px; }
+    label:first-of-type { margin-top: 0; }
+    input[type=text], input[type=url], textarea, select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: var(--font-b); font-size: 14px;
+      padding: 10px 14px; outline: none; transition: border-color 0.2s;
+      resize: vertical;
+    }
+    input[type=text]:focus, input[type=url]:focus, textarea:focus, select:focus { border-color: var(--border-focus); }
+    textarea { min-height: 80px; }
+    select option { background: var(--surface2); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-d); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-accent { background: var(--accent); color: #0d0d10; }
+    .btn-accent:hover { opacity: 0.85; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255,79,107,0.2); }
+    .btn-danger:hover { background: rgba(255,79,107,0.2); }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+
+    /* Project list */
+    .project-list { display: flex; flex-direction: column; gap: 12px; }
+    .project-item {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .project-item-info { flex: 1; min-width: 0; }
+    .project-item-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+    .project-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .icon-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .icon-btn.del:hover { border-color: var(--danger); color: var(--danger); }
+    .type-badge {
+      font-family: var(--font-m); font-size: 10px; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
+    }
+    .type-badge.github { background: rgba(0,200,255,0.1); color: #00c8ff; border: 1px solid rgba(0,200,255,0.2); }
+    .type-badge.video { background: rgba(255,80,80,0.1); color: #ff5050; border: 1px solid rgba(255,80,80,0.2); }
+    .type-badge.manual { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,255,176,0.2); }
+
+    /* GitHub sync */
+    .gh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 4px; }
+    .gh-repo {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .gh-repo:hover { border-color: rgba(0,200,255,0.4); }
+    .gh-repo.selected { border-color: var(--accent); background: var(--accent-dim); }
+    .gh-repo-check {
+      position: absolute; top: 10px; right: 10px;
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: transparent; transition: all 0.15s;
+    }
+    .gh-repo.selected .gh-repo-check { background: var(--accent); border-color: var(--accent); color: #0d0d10; }
+    .gh-repo-name { font-family: var(--font-m); font-size: 12px; font-weight: 400; color: #00c8ff; margin-bottom: 6px; }
+    .gh-repo-lang {
+      font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 5px;
+    }
+    .lang-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 20px;
+      font-size: 13px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-icon { color: var(--accent); font-size: 16px; }
+
+    /* Section divider */
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
+      display: none; align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px; width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-title { font-family: var(--font-d); font-size: 18px; font-weight: 800; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; }
+    .modal-close:hover { color: var(--text); }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 24px 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div><span>FM<em>.</em></span></div>
+      <div class="sidebar-tag">Portfolio Admin</div>
+    </div>
+    <nav>
+      <div class="nav-item active" data-page="availability" onclick="showPage(this)">
+        <span class="nav-icon">📡</span> Availability
+      </div>
+      <div class="nav-item" data-page="projects" onclick="showPage(this)">
+        <span class="nav-icon">🗂</span> Projects
+      </div>
+      <div class="nav-item" data-page="github" onclick="showPage(this)">
+        <span class="nav-icon">⌥</span> GitHub Sync
+      </div>
+      <div class="nav-item" data-page="videos" onclick="showPage(this)">
+        <span class="nav-icon">▶</span> Videos
+      </div>
+      <div class="nav-item" data-page="export" onclick="showPage(this)">
+        <span class="nav-icon">⬇</span> Export
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank" class="preview-btn">↗ Preview Site</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- AVAILABILITY -->
+    <div class="page active" id="page-availability">
+      <div class="page-header">
+        <div class="page-title">Availability</div>
+        <div class="page-sub">Controls the "Available for new opportunities" banner on your portfolio.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Status</div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h3>Available for new opportunities</h3>
+            <p>Shows a live pulsing indicator in your hero section visible to all recruiters.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="availToggle" onchange="updateAvailability(this.checked)" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="availStatus" class="status-badge available">
+          <span class="status-dot"></span> Currently showing: Available
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Custom Status Message</div>
+        <label>Message shown in badge (leave blank for default)</label>
+        <input type="text" id="availMsg" placeholder="Available for new opportunities" value="Available for new opportunities" />
+        <div class="btn-row">
+          <button class="btn btn-accent" onclick="saveAvailMsg()">Save Message</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="page" id="page-projects">
+      <div class="page-header">
+        <div class="page-title">Projects</div>
+        <div class="page-sub">Manage manually added project cards shown in your portfolio.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">All Projects</div>
+        <div id="projectList" class="project-list"></div>
+        <div class="btn-row">
+          <button class="btn btn-accent" onclick="openProjectModal()">+ Add Project</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GITHUB SYNC -->
+    <div class="page" id="page-github">
+      <div class="page-header">
+        <div class="page-title">GitHub Sync</div>
+        <div class="page-sub">Select which public repos to feature on your portfolio.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Pinned Repos — farhan200024</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Click repos to toggle them on/off on your portfolio. Changes apply on export.</p>
+        <div class="gh-grid" id="ghGrid"></div>
+        <div class="btn-row">
+          <button class="btn btn-accent" onclick="saveGhSelection()">Save Selection</button>
+          <button class="btn btn-ghost" onclick="loadGhRepos()">↻ Refresh from GitHub</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div class="page" id="page-videos">
+      <div class="page-header">
+        <div class="page-title">Videos</div>
+        <div class="page-sub">Embed YouTube demos or project walkthroughs.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Video Projects</div>
+        <div id="videoList" class="project-list"></div>
+        <div class="btn-row">
+          <button class="btn btn-accent" onclick="openVideoModal()">+ Add Video</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="page" id="page-export">
+      <div class="page-header">
+        <div class="page-title">Export</div>
+        <div class="page-sub">Generate an updated portfolio file with all your current settings.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">What's included in export</div>
+        <div id="exportSummary" style="font-size:13px;color:var(--muted);line-height:2;"></div>
+        <hr class="section-sep">
+        <button class="btn btn-accent" onclick="exportPortfolio()" style="font-size:14px;padding:14px 28px;">
+          ⬇ Download index.html
+        </button>
+        <p style="margin-top:12px;font-size:12px;color:var(--muted);">Replace your existing index.html with this file. All settings are baked in — no server required.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Project</div>
+      <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label>Project Name</label>
+        <input type="text" id="pName" placeholder="My Cool Project" />
+      </div>
+      <div>
+        <label>Type</label>
+        <select id="pType">
+          <option value="manual">Personal / Contract</option>
+          <option value="github">GitHub</option>
+          <option value="video">Video Demo</option>
+        </select>
+      </div>
+      <div class="full">
+        <label>Description</label>
+        <textarea id="pDesc" placeholder="What did you build and why does it matter?"></textarea>
+      </div>
+      <div>
+        <label>Live URL (optional)</label>
+        <input type="url" id="pUrl" placeholder="https://..." />
+      </div>
+      <div>
+        <label>GitHub URL (optional)</label>
+        <input type="url" id="pGh" placeholder="https://github.com/..." />
+      </div>
+      <div class="full">
+        <label>Tech stack (comma separated)</label>
+        <input type="text" id="pTech" placeholder="Vue.js, Node.js, PostgreSQL" />
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-accent" onclick="saveProject()">Save Project</button>
+      <button class="btn btn-ghost" onclick="closeModal('projectModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Video Project</div>
+      <button class="modal-close" onclick="closeModal('videoModal')">✕</button>
+    </div>
+    <div>
+      <label>Project Title</label>
+      <input type="text" id="vTitle" placeholder="University Final Year Project" />
+      <label>YouTube Embed URL or full iframe</label>
+      <textarea id="vEmbed" placeholder="Paste YouTube URL or full iframe code..."></textarea>
+      <label>Description</label>
+      <textarea id="vDesc" placeholder="What's this project about?"></textarea>
+      <label>Date (optional)</label>
+      <input type="text" id="vDate" placeholder="June 2021" />
+      <label>Tags (comma separated)</label>
+      <input type="text" id="vTags" placeholder="Vue.js, Machine Learning, University" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-accent" onclick="saveVideo()">Save Video</button>
+      <button class="btn btn-ghost" onclick="closeModal('videoModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toastMsg">Saved</span></div>
+
+<script>
+// ── STATE ──
+const STATE_KEY = 'fm_portfolio_state';
+
+function defaultState() {
+  return {
+    available: true,
+    availMsg: 'Available for new opportunities',
+    projects: [
+      {
+        id: 'p1', name: 'Booking CRM Platform', type: 'manual',
+        desc: 'Contracted as sole full-stack developer to architect and build a booking and CRM platform from scratch for a car detailing business — replacing a manual, ad-hoc process with a structured digital system.',
+        url: '', gh: '', tech: 'Full-Stack Architecture, REST API, Database Design, CRM'
+      }
+    ],
+    videos: [
+      {
+        id: 'v1', title: 'Cardiomyopathy Vue App — University Project',
+        embed: 'https://www.youtube.com/embed/scr5B4Laeck?si=cDH_-a4IkD6nGUHC',
+        desc: 'Final year university project — a Vue.js application built around cardiomyopathy data, demonstrating full-stack development skills.',
+        tags: 'Vue.js, University, Final Year Project',
+        date: 'June 2021'
+      }
+    ],
+    ghRepos: [
+      { name: 'cardiomyopathy-vue-app', lang: 'Vue', url: 'https://github.com/farhan200024/cardiomyopathy-vue-app', stars: 1, selected: true },
+      { name: 'androidappprojects', lang: 'Java', url: 'https://github.com/farhan200024/androidappprojects', stars: 1, selected: true },
+      { name: 'rentcarproject', lang: 'PHP', url: 'https://github.com/farhan200024/rentcarproject', stars: 1, selected: false },
+      { name: 'TODOappinJS', lang: 'JavaScript', url: 'https://github.com/farhan200024/TODOappinJS', stars: 0, selected: false },
+      { name: 'Vue3-ticketing-system', lang: 'Vue', url: 'https://github.com/farhan200024/Vue3-ticketing-system', stars: 0, selected: true },
+      { name: 'angular-12-movie-booking', lang: 'TypeScript', url: 'https://github.com/farhan200024/angular-12-movie-booking', stars: 0, selected: true },
+    ]
+  };
+}
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STATE_KEY)) || defaultState(); }
+  catch { return defaultState(); }
+}
+function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+
+let state = loadState();
+let editingProjectId = null;
+
+// ── NAV ──
+function showPage(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-' + el.dataset.page).classList.add('active');
+  if (el.dataset.page === 'github') renderGhGrid();
+  if (el.dataset.page === 'export') renderExportSummary();
+}
+
+// ── AVAILABILITY ──
+function updateAvailability(val) {
+  state.available = val;
+  saveState(state);
+  const badge = document.getElementById('availStatus');
+  badge.className = 'status-badge ' + (val ? 'available' : 'unavailable');
+  badge.innerHTML = `<span class="status-dot"></span> Currently showing: ${val ? 'Available' : 'Not available'}`;
+  toast('Availability updated');
+}
+function saveAvailMsg() {
+  state.availMsg = document.getElementById('availMsg').value || 'Available for new opportunities';
+  saveState(state); toast('Message saved');
+}
+
+// ── PROJECTS ──
+function renderProjects() {
+  const el = document.getElementById('projectList');
+  if (!state.projects.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No projects yet. Add one below.</p>'; return; }
+  el.innerHTML = state.projects.map(p => `
+    <div class="project-item">
+      <div class="project-item-info">
+        <div class="project-item-name">${p.name}</div>
+        <div class="project-item-meta">
+          <span class="type-badge ${p.type}">${p.type}</span>
+          <span>${p.tech ? p.tech.split(',').slice(0,3).join(', ') : '—'}</span>
+        </div>
+      </div>
+      <div class="project-item-actions">
+        <button class="icon-btn" title="Edit" onclick="editProject('${p.id}')">✎</button>
+        <button class="icon-btn del" title="Delete" onclick="deleteProject('${p.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function openProjectModal(id) {
+  editingProjectId = id || null;
+  const p = id ? state.projects.find(x => x.id === id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Project' : 'Add Project';
+  document.getElementById('pName').value = p ? p.name : '';
+  document.getElementById('pType').value = p ? p.type : 'manual';
+  document.getElementById('pDesc').value = p ? p.desc : '';
+  document.getElementById('pUrl').value = p ? p.url : '';
+  document.getElementById('pGh').value = p ? p.gh : '';
+  document.getElementById('pTech').value = p ? p.tech : '';
+  document.getElementById('projectModal').classList.add('open');
+}
+function editProject(id) { openProjectModal(id); }
+function deleteProject(id) {
+  state.projects = state.projects.filter(p => p.id !== id);
+  saveState(state); renderProjects(); toast('Project removed');
+}
+function saveProject() {
+  const name = document.getElementById('pName').value.trim();
+  if (!name) { alert('Project name is required.'); return; }
+  const proj = {
+    id: editingProjectId || 'p' + Date.now(),
+    name, type: document.getElementById('pType').value,
+    desc: document.getElementById('pDesc').value,
+    url: document.getElementById('pUrl').value,
+    gh: document.getElementById('pGh').value,
+    tech: document.getElementById('pTech').value
+  };
+  if (editingProjectId) {
+    const i = state.projects.findIndex(p => p.id === editingProjectId);
+    state.projects[i] = proj;
+  } else { state.projects.push(proj); }
+  saveState(state); renderProjects(); closeModal('projectModal'); toast('Project saved');
+}
+
+// ── GITHUB ──
+const langColors = { Vue:'#41b883', JavaScript:'#f1e05a', TypeScript:'#3178c6', PHP:'#777bb4', Java:'#b07219', Python:'#3572A5', default:'#666' };
+function renderGhGrid() {
+  const el = document.getElementById('ghGrid');
+  el.innerHTML = state.ghRepos.map(r => `
+    <div class="gh-repo ${r.selected ? 'selected' : ''}" onclick="toggleRepo('${r.name}')">
+      <div class="gh-repo-check">✓</div>
+      <div class="gh-repo-name">${r.name}</div>
+      <div class="gh-repo-lang">
+        <span class="lang-dot" style="background:${langColors[r.lang]||langColors.default}"></span>
+        ${r.lang} ${r.stars ? '· ⭐ '+r.stars : ''}
+      </div>
+    </div>`).join('');
+}
+function toggleRepo(name) {
+  const r = state.ghRepos.find(x => x.name === name);
+  if (r) r.selected = !r.selected;
+  renderGhGrid();
+}
+function saveGhSelection() { saveState(state); toast('GitHub selection saved'); }
+function loadGhRepos() { toast('Repos refreshed (using cached pinned repos)'); renderGhGrid(); }
+
+// ── VIDEOS ──
+function renderVideos() {
+  const el = document.getElementById('videoList');
+  if (!state.videos.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No videos yet.</p>'; return; }
+  el.innerHTML = state.videos.map(v => `
+    <div class="project-item">
+      <div class="project-item-info">
+        <div class="project-item-name">${v.title}</div>
+        <div class="project-item-meta">
+          <span class="type-badge video">video</span>
+          ${v.date ? `<span>${v.date}</span>` : ''}
+          <span>${v.tags || '—'}</span>
+        </div>
+      </div>
+      <div class="project-item-actions">
+        <button class="icon-btn del" title="Delete" onclick="deleteVideo('${v.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+function openVideoModal() { document.getElementById('videoModal').classList.add('open'); }
+function deleteVideo(id) {
+  state.videos = state.videos.filter(v => v.id !== id);
+  saveState(state); renderVideos(); toast('Video removed');
+}
+function saveVideo() {
+  const title = document.getElementById('vTitle').value.trim();
+  const raw = document.getElementById('vEmbed').value.trim();
+  if (!title || !raw) { alert('Title and embed are required.'); return; }
+  let embed = raw;
+  const srcMatch = raw.match(/src="([^"]+)"/);
+  if (srcMatch) embed = srcMatch[1];
+  else if (!raw.startsWith('http')) { alert('Please paste a YouTube URL or iframe.'); return; }
+  state.videos.push({
+    id: 'v' + Date.now(), title,
+    embed, desc: document.getElementById('vDesc').value,
+    tags: document.getElementById('vTags').value,
+    date: document.getElementById('vDate').value
+  });
+  saveState(state); renderVideos(); closeModal('videoModal'); toast('Video saved');
+}
+
+// ── EXPORT SUMMARY ──
+function renderExportSummary() {
+  const sel = state.ghRepos.filter(r => r.selected).length;
+  document.getElementById('exportSummary').innerHTML = `
+    <div>Availability: <strong style="color:${state.available?'var(--accent)':'var(--danger)'}">${state.available ? '✓ Available' : '✗ Not available'}</strong></div>
+    <div>Manual projects: <strong>${state.projects.length}</strong></div>
+    <div>GitHub repos featured: <strong>${sel}</strong></div>
+    <div>Video embeds: <strong>${state.videos.length}</strong></div>
+  `;
+}
+
+// ── MODALS ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); }));
+
+// ── TOAST ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── EXPORT ──
+function exportPortfolio() {
+  const sel = state.ghRepos.filter(r => r.selected);
+  const availTag = state.available
+    ? `<div class="hero-tag"><span class="hero-tag-dot"></span> ${state.availMsg}</div>`
+    : '';
+  const ghHTML = sel.map(r => `
+    <div class="project-card gh-card">
+      <div class="project-header">
+        <div class="project-name">${r.name}</div>
+        <div class="project-badges"><span class="badge">GitHub</span><span class="badge">${r.lang}</span></div>
+      </div>
+      <p class="project-desc">Open-source repository. ${r.stars ? r.stars + ' ⭐' : ''}</p>
+      <div class="project-tech">
+        <a href="${r.url}" target="_blank" class="tag tag-link">View on GitHub ↗</a>
+      </div>
+    </div>`).join('');
+  const manualHTML = state.projects.map(p => `
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-name">${p.name}</div>
+        <div class="project-badges"><span class="badge">${p.type === 'manual' ? 'Project' : p.type}</span></div>
+      </div>
+      <p class="project-desc">${p.desc}</p>
+      <div class="project-tech">
+        ${p.tech ? p.tech.split(',').map(t => `<span class="tag">${t.trim()}</span>`).join('') : ''}
+        ${p.url ? `<a href="${p.url}" target="_blank" class="tag tag-link">Live ↗</a>` : ''}
+        ${p.gh ? `<a href="${p.gh}" target="_blank" class="tag tag-link">GitHub ↗</a>` : ''}
+      </div>
+    </div>`).join('');
+  const videoHTML = state.videos.map(v => `
+    <div class="project-card video-card">
+      <div class="project-header">
+        <div class="project-name">${v.title}</div>
+        <div class="project-badges"><span class="badge video-badge">Video</span>${v.date ? `<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--muted);border-color:var(--border)">${v.date}</span>` : ''}</div>
+      </div>
+      ${v.desc ? `<p class="project-desc">${v.desc}</p>` : ''}
+      <div class="video-embed">
+        <iframe src="${v.embed}" title="${v.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      ${v.tags ? `<div class="project-tech">${v.tags.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>` : ''}
+    </div>`).join('');
+
+  const html = buildPortfolioHTML(availTag, manualHTML + videoHTML + ghHTML, state.available);
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+  toast('Portfolio exported!');
+}
+
+function buildPortfolioHTML(availTag, projectsHTML, isAvailable) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farhan Muhammad — Full-Stack Engineer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0b;--surface:#111114;--surface2:#18181d;--border:rgba(255,255,255,0.07);
+      --text:#e8e8ec;--muted:#7a7a8a;--accent:#4fffb0;--accent2:#00c8ff;
+      --accent-dim:rgba(79,255,176,0.12);
+      --font-display:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+    }
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.7;overflow-x:hidden;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:20px 48px;background:rgba(10,10,11,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+    .nav-logo{font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.03em;color:var(--text);text-decoration:none;}
+    .nav-logo span{color:var(--accent);}
+    .nav-links{display:flex;gap:32px;list-style:none;}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--accent);}
+    #hero{min-height:100vh;display:flex;align-items:center;padding:120px 48px 80px;position:relative;overflow:hidden;max-width:100%;}
+    .hero-grid-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(79,255,176,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,255,176,0.03) 1px,transparent 1px);background-size:60px 60px;}
+    .hero-glow{position:absolute;top:-200px;right:-100px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(79,255,176,0.07) 0%,transparent 70%);pointer-events:none;}
+    .hero-content{position:relative;z-index:1;max-width:860px;}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(79,255,176,0.2);border-radius:100px;padding:6px 16px;font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:0.08em;margin-bottom:28px;}
+    .hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.6s ease-in-out infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+    .hero-tag-hidden{display:none;}
+    h1{font-family:var(--font-display);font-size:clamp(48px,7vw,88px);font-weight:800;line-height:1.0;letter-spacing:-0.04em;margin-bottom:24px;}
+    h1 .line2{color:var(--accent);}
+    .hero-sub{font-size:17px;color:var(--muted);max-width:520px;line-height:1.7;margin-bottom:40px;}
+    .hero-sub strong{color:var(--text);font-weight:500;}
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#0a0a0b;font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:14px 28px;border-radius:6px;text-decoration:none;transition:transform 0.15s,box-shadow 0.15s;}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(79,255,176,0.35);}
+    .btn-outline{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);color:var(--text);font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;padding:14px 28px;border-radius:6px;text-decoration:none;transition:border-color 0.2s,color 0.2s;}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .hero-stats{margin-top:72px;display:flex;gap:48px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:40px;}
+    .stat-num{font-family:var(--font-display);font-size:36px;font-weight:800;color:var(--accent);letter-spacing:-0.03em;}
+    .stat-label{font-size:12px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;}
+    section{padding:100px 48px;max-width:1100px;margin:0 auto;}
+    .section-label{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;}
+    h2{font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:48px;}
+    .divider{border:none;border-top:1px solid var(--border);margin:0;}
+    .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+    .skill-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px 28px;transition:border-color 0.2s,transform 0.2s;}
+    .skill-card:hover{border-color:rgba(79,255,176,0.3);transform:translateY(-3px);}
+    .skill-card-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:8px;}
+    .tag{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:4px;transition:color 0.2s,border-color 0.2s;}
+    .tag:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+    .tag-link{color:var(--accent2)!important;border-color:rgba(0,200,255,0.2)!important;text-decoration:none;}
+    .exp-list{display:flex;flex-direction:column;}
+    .exp-item{display:grid;grid-template-columns:180px 1fr;gap:0 48px;padding:40px 0;border-bottom:1px solid var(--border);}
+    .exp-item:first-child{border-top:1px solid var(--border);}
+    .exp-period{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;}
+    .exp-location{font-size:12px;color:var(--muted);}
+    .exp-role{font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-0.02em;}
+    .exp-company{font-size:14px;color:var(--accent);font-weight:500;margin-bottom:18px;}
+    .exp-bullets{list-style:none;display:flex;flex-direction:column;gap:10px;}
+    .exp-bullets li{font-size:14px;color:var(--muted);padding-left:18px;position:relative;}
+    .exp-bullets li::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:12px;}
+    .exp-bullets li strong{color:var(--text);font-weight:500;}
+    .project-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;margin-bottom:20px;transition:border-color 0.2s;}
+    .project-card:hover{border-color:rgba(79,255,176,0.25);}
+    .project-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px;}
+    .project-name{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.02em;}
+    .project-badges{display:flex;gap:8px;flex-wrap:wrap;}
+    .badge{font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 12px;border-radius:100px;background:var(--accent-dim);border:1px solid rgba(79,255,176,0.2);color:var(--accent);}
+    .video-badge{background:rgba(255,80,80,0.1)!important;color:#ff5050!important;border-color:rgba(255,80,80,0.2)!important;}
+    .project-desc{font-size:14px;color:var(--muted);line-height:1.8;}
+    .project-tech{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;}
+    .video-embed{margin-top:20px;border-radius:8px;overflow:hidden;aspect-ratio:16/9;}
+    .video-embed iframe{width:100%;height:100%;border:none;}
+    .cert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+    .cert-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px 32px;display:flex;flex-direction:column;gap:8px;transition:border-color 0.2s;}
+    .cert-card:hover{border-color:rgba(79,255,176,0.3);}
+    .cert-icon{font-size:28px;margin-bottom:4px;}
+    .cert-name{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-0.01em;}
+    .cert-issuer{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;}
+    .cert-year{font-size:12px;color:var(--muted);margin-top:4px;}
+    #contact{text-align:center;padding:80px 48px 120px;position:relative;overflow:hidden;}
+    .contact-glow{position:absolute;bottom:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(79,255,176,0.06) 0%,transparent 70%);pointer-events:none;}
+    .contact-inner{position:relative;z-index:1;max-width:600px;margin:0 auto;}
+    #contact h2{margin-bottom:16px;}
+    .contact-sub{color:var(--muted);margin-bottom:40px;font-size:16px;}
+    .contact-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;}
+    .contact-link{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);text-decoration:none;font-family:var(--font-mono);font-size:12px;padding:12px 24px;border-radius:8px;transition:border-color 0.2s,color 0.2s,transform 0.15s;}
+    .contact-link:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);}
+    footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+    footer p{font-size:12px;color:var(--muted);font-family:var(--font-mono);}
+    .fade-in{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;}
+    .fade-in.visible{opacity:1;transform:translateY(0);}
+    @media(max-width:768px){nav{padding:16px 24px;}.nav-links{display:none;}#hero{padding:100px 24px 60px;}section{padding:60px 24px;}.exp-item{grid-template-columns:1fr;gap:8px;}.exp-meta{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;}footer{padding:20px 24px;flex-direction:column;text-align:center;}}
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="#">FM<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+  <section id="hero" style="max-width:100%;padding-left:48px;padding-right:48px;">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      ${availTag}
+      <h1><span class="line1">Farhan<br></span><span class="line2">Muhammad</span></h1>
+      <p class="hero-sub"><strong>Full-Stack Software Engineer</strong> based in Manchester, UK. 4+ years shipping production features for tens of thousands of users. Specialising in <strong>JavaScript, TypeScript, Angular, Vue.js, Node.js</strong> and <strong>AWS</strong>.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn-primary">Get in touch ↗</a>
+        <a href="#experience" class="btn-outline">View work</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="stat-num" id="years-exp"></div><div class="stat-label">Years Experience</div></div>
+        <div class="stat-item"><div class="stat-num">10k+</div><div class="stat-label">Users Served</div></div>
+        <div class="stat-item"><div class="stat-num">AWS</div><div class="stat-label">Certified (2026)</div></div>
+        <div class="stat-item"><div class="stat-num">NHS</div><div class="stat-label">API Integration</div></div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+  <section id="skills" class="fade-in">
+    <div class="section-label">// Core Competencies</div>
+    <h2>Technical Skills</h2>
+    <div class="skills-grid">
+      <div class="skill-card"><div class="skill-card-title">Front-End</div><div class="skill-tags"><span class="tag">JavaScript ES6+</span><span class="tag">TypeScript</span><span class="tag">Angular</span><span class="tag">Vue.js</span><span class="tag">HTML5</span><span class="tag">CSS3 / SCSS</span><span class="tag">Responsive Design</span><span class="tag">WCAG Accessibility</span></div></div>
+      <div class="skill-card"><div class="skill-card-title">Back-End</div><div class="skill-tags"><span class="tag">Node.js</span><span class="tag">REST API Design</span><span class="tag">ColdFusion</span><span class="tag">MySQL</span><span class="tag">PostgreSQL</span><span class="tag">API Integration</span></div></div>
+      <div class="skill-card"><div class="skill-card-title">Cloud & DevOps</div><div class="skill-tags"><span class="tag">AWS EC2</span><span class="tag">AWS S3</span><span class="tag">Lambda</span><span class="tag">CloudFront</span><span class="tag">Docker</span><span class="tag">CI/CD Pipelines</span><span class="tag">Git / GitHub</span></div></div>
+      <div class="skill-card"><div class="skill-card-title">Testing & Process</div><div class="skill-tags"><span class="tag">Mocha</span><span class="tag">Chai</span><span class="tag">Unit Testing</span><span class="tag">Integration Testing</span><span class="tag">Agile / Scrum</span><span class="tag">Google Analytics</span><span class="tag">Code Review</span></div></div>
+    </div>
+  </section>
+  <hr class="divider">
+  <section id="experience" class="fade-in">
+    <div class="section-label">// Work History</div>
+    <h2>Experience</h2>
+    <div class="exp-list">
+      <div class="exp-item">
+        <div class="exp-meta"><div class="exp-period">Dec 2021 – Present</div><div class="exp-location">Manchester, UK · Hybrid</div></div>
+        <div class="exp-body">
+          <div class="exp-role">Software Engineer</div>
+          <div class="exp-company">Extravision</div>
+          <ul class="exp-bullets">
+            <li>Built and shipped <strong>full-stack features</strong> across Angular/Vue.js front ends and Node.js back ends serving tens of thousands of users.</li>
+            <li>Enabled <strong>real-time NHS digital data exchange</strong> by designing and integrating REST APIs that replaced a capability that previously didn't exist.</li>
+            <li>Built or integrated <strong>3–5 REST APIs</strong> across the product suite, reducing manual data handling and unblocking downstream features.</li>
+            <li>Contributed to <strong>CI/CD pipeline improvements</strong> that meaningfully reduced deployment failures.</li>
+            <li>Introduced <strong>automated test coverage</strong> with Mocha and Chai, catching regressions before production.</li>
+            <li>Used <strong>Google Analytics data</strong> to identify drop-off points, feeding findings into targeted UX improvements.</li>
+            <li>Deployed and maintained <strong>AWS cloud infrastructure</strong> (EC2, S3, CloudFront) with Docker containerisation.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <hr class="divider">
+  <section id="projects" class="fade-in">
+    <div class="section-label">// Work & Open Source</div>
+    <h2>Projects</h2>
+    ${projectsHTML}
+  </section>
+  <hr class="divider">
+  <section id="education" class="fade-in">
+    <div class="section-label">// Credentials</div>
+    <h2>Education & Certifications</h2>
+    <div class="cert-grid">
+      <div class="cert-card"><div class="cert-icon">☁️</div><div class="cert-name">AWS Certified Cloud Practitioner</div><div class="cert-issuer">Amazon Web Services</div><div class="cert-year">2026</div></div>
+      <div class="cert-card"><div class="cert-icon">🎓</div><div class="cert-name">BSc Software Engineering</div><div class="cert-issuer">Manchester Metropolitan University</div><div class="cert-year">2018 – 2021</div></div>
+      <div class="cert-card"><div class="cert-icon">📋</div><div class="cert-name">BTEC Level 3 Extended Diploma — IT</div><div class="cert-issuer">Stockport College</div><div class="cert-year">2016 – 2018</div></div>
+    </div>
+  </section>
+  <hr class="divider">
+  <section id="contact">
+    <div class="contact-glow"></div>
+    <div class="contact-inner">
+      <div class="section-label">// Let's Talk</div>
+      <h2>${isAvailable ? 'Open to Work' : 'Get in Touch'}</h2>
+      <p class="contact-sub">Full-Stack Engineer based in Manchester. ${isAvailable ? 'Available for full-time roles, contract work, and interesting problems.' : 'Open to interesting conversations and collaborations.'}</p>
+      <div class="contact-links">
+        <a href="mailto:Farhan.aslam330@gmail.com" class="contact-link"><span>✉</span> Farhan.aslam330@gmail.com</a>
+        <a href="https://linkedin.com/in/farhan-muhammad-00" target="_blank" class="contact-link"><span>in</span> LinkedIn</a>
+        <a href="https://github.com/farhan200024" target="_blank" class="contact-link"><span>⌥</span> GitHub</a>
+        <a href="tel:+447438345320" class="contact-link"><span>📞</span> +44 7438 345320</a>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <p>© 2026 Farhan Muhammad</p>
+    <p>Manchester, UK · Full-Stack Engineer</p>
+  </footer>
+  <script>
+    const start = new Date(2021, 11, 1);
+    const years = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24 * 365.25));
+    document.getElementById('years-exp').textContent = years + '+';
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  <\/script>
+</body>
+</html>`;
+}
+
+// ── INIT ──
+renderProjects();
+renderVideos();
+renderGhGrid();
+document.getElementById('availToggle').checked = state.available;
+document.getElementById('availMsg').value = state.availMsg;
+updateAvailability(state.available);
+</script>
+</body>
+</html>
